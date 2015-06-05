@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} TechWeb {% endblock %}
+
+{% block userName %}{{ app.user.username }}{% endblock %}
+{% block body %}
+    <div align="center">
+        <table class="table table-bordered">
+            {% for item in projects %}
+                {% if item.project.getIsHidden() == false %}
+                    <tr>
+                        <td class="col-xs-12 col-md-2">
+                            <div class="progress" align="center">
+                                <div class="progress-bar" role="progressbar"
+                                     style="width: {% for data in processData %}{% if data.projectId == item.project.id %}{{ data.process.percent }}{% endif %}{% endfor %}%;">
+                                    <span></span>
+                                </div>
+                            </div>
+                            <div>
+                                DueDate:{% for data in processData %}{% if data.projectId == item.project.id %}{{ data.dueDate }}{% endif %}{% endfor %}</div>
+                        </td>
+                        <td class="col-xs-12 col-md-2">
+                            <a href="p/{{ item.project.id }}"
+                               class="btn btn-primary btn-lg btn-block">{{ item.project.name }}</a>
+                        </td>
+                        <td class="col-xs-12 col-md-6">{{ item.project.info }}</td>
+                        <td class="col-xs-12 col-md-2">
+                            {% if app.user.id == item.project.ownerId %}
+                                <a href="project/{{ item.project.id }}/edit" class="btn btn-info">Edit</a>
+                                <a href="project/delete/{{ item.project.id }}" class="btn btn-danger">Delete</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            <div class="col-xs-12 col-md-4"></div>
+            <div class="col-xs-12 col-md-4">
+                <a href="/project/new" class="btn btn-primary btn-lg btn-block">Create a new Project...</a>
+            </div>
+            <div class="col-xs-12 col-md-4"></div>
+        </table>
+    </div>
+{% endblock %}
+
+{% block javascripts %}{% endblock %}

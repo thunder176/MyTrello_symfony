@@ -1,0 +1,17 @@
+{% extends '::base.html.twig' %}
+{% block title %} TechWeb {% endblock %}
+{% block userName %}{{ app.user.username }}{% endblock %}
+
+{% block body -%}
+    <h1>Project creation</h1>
+
+    {{ form(form) }}
+
+        <ul class="record_actions">
+    <li>
+        <a href="/">
+            Back to the list
+        </a>
+    </li>
+</ul>
+{% endblock %}

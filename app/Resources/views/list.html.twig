@@ -1,0 +1,146 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} {{ project.name }} {% endblock %}
+
+{% block userName %}{{ app.user.username }}{% endblock %}
+{% block body %}
+    <div class="container-fluid">
+        <div class="col-xs-12 col-md-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    {% if app.user.id == project.ownerId %}
+                        <a href="/usertoproject/{{ projectId }}/new">add a member...</a>
+                    {% endif %}
+                </div>
+                <div class="panel-body">
+                    {% if app.user.id == project.ownerId %}
+                        {% for item in members %}
+                            <div class="well">
+                                {% if item.user.id == project.ownerId %}
+                                    <p class="brand-primary">{{ item.user.username }}</p>
+                                {% else %}
+                                    <a href="/usertoproject/{{ projectId }}/{{ item.id }}/edit"
+                                       class="brand-primary">{{ item.user.username }}</a>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        {% for item in members %}
+                            <div class="well">
+                                <p class="brand-primary">{{ item.user.username }}</p>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="panel-footer">
+                </div>
+            </div>
+        </div>
+        {% for itemOfList in lists %}
+            {% if itemOfList.getIsHidden() == false %}
+                <div class="col-xs-12 col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <a href="/listoftask/{{ projectId }}/{{ itemOfList.id }}/edit"
+                               class="panel-title">{{ itemOfList.name }}</a>
+                        </div>
+                        <div class="panel-body">
+                            {% for itemOfTask in itemOfList.tasks %}
+                                {% if itemOfTask.getIsHidden() == false %}
+                                    <div class="well" id="dragFrom{{ itemOfTask.id }}" draggable="true"
+                                         ondragstart="drag(event, {{ itemOfList.id }}, {{ itemOfTask.id }})">
+                                        <div class="row">
+                                            <div>
+                                                <a href="/task/{{ projectId }}/{{ itemOfList.id }}/{{ itemOfTask.id }}/edit"
+                                                   class="brand-primary">{{ itemOfTask.text }}</a></div>
+                                            <div>
+                                                <div>
+                                                    <div style="display:inline">Members:</div>
+                                                    <div style="display:inline">
+                                                        <select id="userSelected{{ itemOfTask.id }}">
+                                                            {% for item in members %}
+                                                                <option value={{ item.user.id }}>{{ item.user.username }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <div style="display:inline">
+                                                        <button type="button" class="btn btn-success"
+                                                                onclick="addTaskMember({{ projectId }}, {{ itemOfTask.id }})">
+                                                            Add
+                                                        </button>
+                                                    </div>
+
+                                                    {% for userInTask in itemOfTask.users %}
+                                                        <div style="display:inline">
+                                                            {% if app.user.username == userInTask.user.username %}
+                                                                <p class="bg-danger">{{ userInTask.user.username }}</p>
+                                                            {% else %}
+                                                                <p class="bg-info">{{ userInTask.user.username }}</p>
+                                                            {% endif %}
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                Complete:{% if itemOfTask.isComplete %}Yes!{% else %}No...{% endif %}</div>
+                                            <div>Due date:{{ itemOfTask.dueDate }}</div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                            <div class="well" id="dragTo{{ itemOfList.id }}"
+                                 ondrop="drop(event, {{ projectId }}, {{ itemOfList.id }})"
+                                 ondragover="allowDrop(event)">Drag here to change the list of any Task...
+                            </div>
+                            <div class="panel-footer">
+                                <a href="/task/{{ projectId }}/{{ itemOfList.id }}/new" id="addTask">add a task...</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+        <div class="col-xs-12 col-md-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <a href="/listoftask/{{ projectId }}/new" id="addList">add a list...</a>
+                </div>
+                <div class="panel-body">
+                </div>
+                <div class="panel-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script type="text/javascript">
+        function addTaskMember(proId, taskId) {
+            var selectBox = document.getElementById("userSelected" + taskId);
+            var selectedUser = selectBox.options[selectBox.selectedIndex].value;
+            var url = "/usertotask/addUserToTask/" + proId + "/" + selectedUser + "/" + taskId;
+            self.location = url;
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev, listId, taskId) {
+            ev.dataTransfer.setData("text", ev.target.id);
+            // ev.dataTransfer.setData("listId", listId);
+            ev.dataTransfer.setData("taskId", taskId);
+        }
+
+        function drop(ev, proId, toList) {
+            ev.preventDefault();
+            var data = ev.dataTransfer.getData("text");
+            //var fromList = ev.dataTransfer.getData("listId");
+            var taskId = ev.dataTransfer.getData("taskId");
+            //ev.target.appendChild(document.getElementById(data));
+            var url = "/p/moveTask/" + proId + "/" + toList + "/" + taskId;
+            self.location = url;
+        }
+    </script>
+{% endblock %}
